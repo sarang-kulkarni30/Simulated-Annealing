@@ -1,6 +1,18 @@
 import numpy
 import cv2
+import tkinter as tk
+from tkinter import messagebox
 
+# Constants for visualization
+WIDTH = 640
+HEIGHT = 480
+FONT = cv2.FONT_HERSHEY_DUPLEX
+SIZE = 0.7
+WHITE = (255, 255, 255)
+GREEN = (0, 255, 0)
+RED = (0, 0, 255)
+
+# Functions for simulated annealing
 def Generate(width, height, count):
     cities = []
     for i in range(count):
@@ -53,33 +65,14 @@ def Draw(width, height, cities, solution, infos):
     cv2.putText(frame, f": {infos[3]:.2f}", (175, 125), FONT, SIZE, WHITE)
     cv2.imshow("Simulated Annealing", frame)
     cv2.waitKey(5)
-    
-WIDTH = 640
-HEIGHT = 480
-CITY_COUNT = 20
-INITIAL_TEMPERATURE = 1000
-STOPPING_TEMPERATURE = 1
-TEMPERATURE_DECAY = 0.999
-FONT = cv2.FONT_HERSHEY_DUPLEX
-SIZE = 0.7
-WHITE = (255, 255, 255)
-GREEN = (0, 255, 0)
-RED = (0, 0, 255)
 
-if __name__ == "__main__":
-    WIDTH = int(input("Enter the width of the area: "))
-    HEIGHT = int(input("Enter the height of the area: "))
-    CITY_COUNT = int(input("Enter the number of cities: "))
-    INITIAL_TEMPERATURE = float(input("Enter the initial temperature: "))
-    STOPPING_TEMPERATURE = float(input("Enter the stopping temperature: "))
-    TEMPERATURE_DECAY = float(input("Enter the temperature decay rate: "))
-    
-    cities = Generate(WIDTH, HEIGHT, CITY_COUNT)
-    current_solution = Initialize(CITY_COUNT)
+def start_simulated_annealing(width, height, city_count, initial_temp, stopping_temp, temp_decay):
+    cities = Generate(width, height, city_count)
+    current_solution = Initialize(city_count)
     current_score = Evaluate(cities, current_solution)
     best_score = worst_score = current_score
-    temperature = INITIAL_TEMPERATURE
-    while (temperature > STOPPING_TEMPERATURE):
+    temperature = initial_temp
+    while (temperature > stopping_temp):
         new_solution = Modify(current_solution)
         new_score = Evaluate(cities, new_solution)
         best_score = min(best_score, new_score)
@@ -93,6 +86,60 @@ if __name__ == "__main__":
             if probability > numpy.random.uniform():
                 current_solution = new_solution
                 current_score = new_score
-        temperature *= TEMPERATURE_DECAY
+        temperature *= temp_decay
         infos = (temperature, current_score, best_score, worst_score)
-        Draw(WIDTH, HEIGHT, cities, current_solution, infos)
+        Draw(width, height, cities, current_solution, infos)
+
+def run_simulated_annealing():
+    try:
+        width = int(entry_width.get())
+        height = int(entry_height.get())
+        city_count = int(entry_city_count.get())
+        initial_temp = float(entry_initial_temp.get())
+        stopping_temp = float(entry_stopping_temp.get())
+        temp_decay = float(entry_temp_decay.get())
+        
+        start_simulated_annealing(width, height, city_count, initial_temp, stopping_temp, temp_decay)
+    except ValueError:
+        messagebox.showerror("Error", "Please enter valid numeric values.")
+
+# Create the Tkinter GUI
+root = tk.Tk()
+root.title("Simulated Annealing Parameters")
+
+# Input fields
+label_width = tk.Label(root, text="Enter the width of the area:")
+label_width.pack()
+entry_width = tk.Entry(root)
+entry_width.pack()
+
+label_height = tk.Label(root, text="Enter the height of the area:")
+label_height.pack()
+entry_height = tk.Entry(root)
+entry_height.pack()
+
+label_city_count = tk.Label(root, text="Enter the number of cities:")
+label_city_count.pack()
+entry_city_count = tk.Entry(root)
+entry_city_count.pack()
+
+label_initial_temp = tk.Label(root, text="Enter the initial temperature:")
+label_initial_temp.pack()
+entry_initial_temp = tk.Entry(root)
+entry_initial_temp.pack()
+
+label_stopping_temp = tk.Label(root, text="Enter the stopping temperature:")
+label_stopping_temp.pack()
+entry_stopping_temp = tk.Entry(root)
+entry_stopping_temp.pack()
+
+label_temp_decay = tk.Label(root, text="Enter the temperature decay rate:")
+label_temp_decay.pack()
+entry_temp_decay = tk.Entry(root)
+entry_temp_decay.pack()
+
+# Start button
+button_start = tk.Button(root, text="Start Simulated Annealing", command=run_simulated_annealing)
+button_start.pack()
+
+root.mainloop()
